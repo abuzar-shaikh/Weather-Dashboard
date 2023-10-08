@@ -27,13 +27,57 @@ const API_KEY = "0bf05978ce858b9ae276d4804667688a";
 const Home = () => {
   const [data, setData] = useState(null);
   const [location, setLocation] = useState("mumbai");
+  const [inputvalue, setinputvalue] = useState("");
+  const [animate, setanimate] = useState(false);
+  const [loading, setloading] = useState(false);
+  const [ErrorMsg, setErrorMsg] = useState('');
 
+  const handalinput = (e) => {
+    setinputvalue(e.target.value);
+  };
+
+  //   console.log(inputvalue);
+  const handalsumbit = (e) => {
+    e.preventDefault();
+
+    // console.log(inputvalue);
+    if (inputvalue !== "") {
+      setLocation(inputvalue);
+    }
+
+    const input = document.querySelector("input");
+    if (input.value === "") {
+      setanimate(true);
+      setTimeout(() => {
+        setanimate(false);
+      }, 500);
+    }
+    input.value = "";
+  };
   useEffect(() => {
+    setloading(true);
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${API_KEY}`;
     axios.get(url).then((res) => {
+      setTimeout((res) => {
+        // setData(res.data);
+        setloading(false);
+      }, 1500);
       setData(res.data); //for spinner off
-    });
+    }).catch(err=>{
+        setloading(false)
+        setErrorMsg(err)
+    })
   }, [location]);
+
+
+useEffect(()=>{
+const timer=setTimeout(()=>{
+setErrorMsg('')
+},2000)
+return ( )=>clearTimeout(timer)
+
+},[ErrorMsg])
+
   if (!data) {
     return (
       <div>
@@ -45,6 +89,7 @@ const Home = () => {
     );
   }
   let icon;
+
   console.log(data.weather[0].main);
 
   switch (data.weather[0].main) {
@@ -81,19 +126,31 @@ const Home = () => {
 
   const date = new Date();
   return (
-    <div className="home_main">
+    <div id="home_main">
+    
+        {ErrorMsg && <div>{`${ErrorMsg.response.data.message}`}</div>}
       {/* {form} */}
       <form>
         <div>
-          <input type="text" placeholder="Search by city or country" />
-          <button>
+          <input
+            onChange={(e) => handalinput(e)}
+            type="text"
+            placeholder="Search by city or country"
+          />
+          <button onClick={(e) => handalsumbit(e)}>
             <IoMdSearch />
           </button>
         </div>
       </form>
       {/* {card} */}
       <div>
+        {loading ? <div>
+            <ImSpinner8/>
+        </div> : <div>
+
+            </div>}
         {/* {card top} */}
+
         <div>
           <div>{icon}</div>
           {/* content name */}
